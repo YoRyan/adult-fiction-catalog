@@ -12,15 +12,22 @@ let saveToJson clips =
 let saveToDir clips =
     let outDir url =
         let m = Regex.Match(url, "/studio/(\d+)/\d+/([^/]+)$")
-        if m.Success then Path.Combine(string m.Groups.[1], string m.Groups.[2])
-        else string (url.GetHashCode())
+
+        if m.Success then
+            Path.Combine(string m.Groups.[1], string m.Groups.[2])
+        else
+            string (url.GetHashCode())
+
     let writeIfPopulated path (arr: byte array) =
         if arr.Length > 0 then
             File.WriteAllBytes(path, arr)
+
     let serializeSettings =
-         new JsonSerializerSettings(
+        new JsonSerializerSettings(
             ContractResolver = new IgnoreBinaryAttributesResolver(),
-            Formatting = Formatting.Indented)
+            Formatting = Formatting.Indented
+        )
+
     let save clip =
         let dir = Path.Combine("clips4scrape", outDir clip.URL)
         Directory.CreateDirectory(dir) |> ignore
@@ -29,7 +36,9 @@ let saveToDir clips =
         writeIfPopulated (Path.Combine(dir, "preview.gif")) (clip.PreviewGif)
         let serialized = JsonConvert.SerializeObject(clip, serializeSettings)
         File.WriteAllText(Path.Combine(dir, "metadata.json"), serialized)
-    for clip in clips do save clip
+
+    for clip in clips do
+        save clip
 
 [<EntryPoint>]
 let main argv =

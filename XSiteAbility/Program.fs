@@ -64,7 +64,7 @@ let getSetsForUser user = getSetsForPage user 1
 
 let readDownloadResponse (response: HttpResponse) : Download option =
     match response.StatusCode with
-    | 200 -> 
+    | 200 ->
         let fileName =
             match response.Headers.TryGetValue "Content-Disposition" with
             | true, header ->
