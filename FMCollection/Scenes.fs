@@ -129,14 +129,25 @@ let scrapeAll (auth: string * string) =
                 if not (String.IsNullOrWhiteSpace(description)) then
                     File.WriteAllText(Path.Combine(dir, "Description.md"), description)
 
-                for downloadUrl in downloads do
-                    let response = Http.RequestStream(downloadUrl, headers = [ auth ])
-                    let fileName = Regex.Replace(downloadUrl, "^.+/", "")
-                    use file = File.OpenWrite(Path.Combine(dir, fileName))
-                    response.ResponseStream.CopyTo(file)
+                let downloadError =
+                    (Seq.exists
+                        (fun downloadUrl ->
+                            let fileName = Regex.Replace(downloadUrl, "^.+/", "")
+                            use file = File.OpenWrite(Path.Combine(dir, fileName))
 
-                // Downloads successfully scraped
-                printfn "%s (%d)" dir downloads.Length
-                scraped <- Set.add url scraped
-                writeScraped scraped
+                            try
+                                let response = Http.RequestStream(downloadUrl, headers = [ auth ])
+                                response.ResponseStream.CopyTo(file)
+                                false
+                            with ex ->
+                                printfn "Failed to download %s" downloadUrl
+                                printfn "%s" (ex.ToString())
+                                true)
+                        downloads)
+
+                if not downloadError then
+                    // Downloads successfully scraped
+                    printfn "%s (%d)" dir downloads.Length
+                    scraped <- Set.add url scraped
+                    writeScraped scraped
             | Unknown -> ()
