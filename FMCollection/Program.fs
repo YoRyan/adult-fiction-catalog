@@ -16,6 +16,10 @@ let main argv =
 
     match mode with
     | ScrapeHdVideos ->
+        // Use with yt-dlp --add-headers
+        let (_, authHeader) = auth
+        printfn "Authorization: %s" authHeader
+
         for video in HdVideos.getAvailable auth do
             printfn "%s" (video.ToString())
     | ScrapeScenes -> Scenes.scrapeAll auth
