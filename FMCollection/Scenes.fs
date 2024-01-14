@@ -108,6 +108,22 @@ let private readPage (auth: string * string) (url: string) : Page =
 let directoryName (slug: string) (title: string) =
     Regex.Replace($"{slug} - {title}", @"[<>:""/\\|?*]", "_")
 
+let rec downloadWithRetries (auth: string * string) (retries: int) (url: string) (outputPath: string) =
+    let retry =
+        using (File.OpenWrite(outputPath)) (fun file ->
+            try
+                let response = Http.RequestStream(url, headers = [ auth ])
+                response.ResponseStream.CopyTo(file)
+                false
+            with _ ->
+                if retries <= 0 then
+                    reraise ()
+
+                true)
+
+    if retry then
+        downloadWithRetries auth (retries - 1) url outputPath
+
 let scrapeAll (auth: string * string) =
     let mutable scraped = readScraped ()
     let urls = new Queue<string>(startUrls)
@@ -129,15 +145,14 @@ let scrapeAll (auth: string * string) =
                 if not (String.IsNullOrWhiteSpace(description)) then
                     File.WriteAllText(Path.Combine(dir, "Description.md"), description)
 
-                let downloadError =
+                let downloadFailed =
                     (Seq.exists
                         (fun downloadUrl ->
-                            let fileName = Regex.Replace(downloadUrl, "^.+/", "")
-                            use file = File.OpenWrite(Path.Combine(dir, fileName))
+                            let filePath = Path.Combine(dir, Regex.Replace(downloadUrl, "^.+/", ""))
+                            let retries = 3
 
                             try
-                                let response = Http.RequestStream(downloadUrl, headers = [ auth ])
-                                response.ResponseStream.CopyTo(file)
+                                downloadWithRetries auth retries downloadUrl filePath
                                 false
                             with ex ->
                                 printfn "Failed to download %s" downloadUrl
@@ -145,7 +160,7 @@ let scrapeAll (auth: string * string) =
                                 true)
                         downloads)
 
-                if not downloadError then
+                if not downloadFailed then
                     // Downloads successfully scraped
                     printfn "%s (%d)" dir downloads.Length
                     scraped <- Set.add url scraped
