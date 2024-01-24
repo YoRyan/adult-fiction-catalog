@@ -84,7 +84,9 @@ let private readPage (auth: string * string) (url: string) : Page =
                 | _ -> None
 
             let keywords =
-                List.ofArray ((Seq.pick findKeywords (document.CssSelect("meta"))).Split(","))
+                match (Seq.tryPick findKeywords (document.CssSelect("meta"))) with
+                | Some value -> List.ofArray (value.Split(","))
+                | None -> []
 
             let descriptionMatch = Regex.Match(source, @"<!--Description-->([\s\S]+?)<!--")
 
