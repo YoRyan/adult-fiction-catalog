@@ -15,14 +15,8 @@ type private Page =
 let private scrapedFileName = "FMCScraped.txt"
 
 let private startUrls =
-    [ "https://fmcollection.us/members2/pages.php?id=categories&site_id=14"
-      "https://fmcollection.us/members2/category.php?id=15&s=n"
-      "https://fmcollection.us/members2/category.php?id=16&s=n"
-      "https://fmcollection.us/members2/category.php?id=17&s=n"
-      "https://fmcollection.us/members2/category.php?id=18&s=n"
-      "https://fmcollection.us/members2/category.php?id=88&s=n"
-      "https://fmcollection.us/members2/category.php?id=87&s=n"
-      "https://fmcollection.us/members2/category.php?id=82" ]
+    [ "https://fmcollection.us/members2/category.php?id=4" // photos
+      "https://fmcollection.us/members2/category.php?id=82" ] // downloadable clips
 
 let private readScraped () : Set<string> =
     let lines =
