@@ -111,10 +111,7 @@ let rec downloadWithRetries (auth: string * string) (retries: int) (url: string)
                 let response = Http.RequestStream(url, headers = [ auth ])
                 response.ResponseStream.CopyTo(file)
                 false
-            with _ ->
-                if retries <= 0 then
-                    reraise ()
-
+            with _ when retries > 0 ->
                 true)
 
     if retry then
