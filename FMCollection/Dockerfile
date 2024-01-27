@@ -9,7 +9,7 @@ FROM mcr.microsoft.com/dotnet/runtime:8.0
 
 RUN groupadd -r scrape && useradd --no-log-init -r -g scrape scrape
 USER scrape
-WORKDIR /app
-COPY --from=build /app .
+WORKDIR /work
+COPY --from=build /app /app
 
-ENTRYPOINT ["./FMCollection"]
+ENTRYPOINT ["/app/FMCollection"]
