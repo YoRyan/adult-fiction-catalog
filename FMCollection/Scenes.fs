@@ -5,6 +5,7 @@ open ReverseMarkdown
 open System
 open System.Collections.Generic
 open System.IO
+open System.Net
 open System.Text.RegularExpressions
 
 type private Page =
@@ -139,19 +140,25 @@ let scrapeAll (auth: string * string) =
                     File.WriteAllText(Path.Combine(dir, "Description.md"), description)
 
                 let downloadFailed =
-                    (Seq.exists
-                        (fun downloadUrl ->
+                    try
+                        for downloadUrl in downloads do
                             let filePath = Path.Combine(dir, Regex.Replace(downloadUrl, "^.+/", ""))
                             let retries = 3
 
                             try
                                 downloadWithRetries auth retries downloadUrl filePath
-                                false
-                            with ex ->
-                                printfn "Failed to download %s" downloadUrl
-                                printfn "%s" (ex.ToString())
-                                true)
-                        downloads)
+                            with :? WebException as ex ->
+                                // The least-worst way to extract the HTTP status code.
+                                // Casting to the System.Net exceptions does not work.
+                                match ex.Message with
+                                | x when x.Contains("The remote server returned an error: (404) Not Found.") ->
+                                    printfn "404: %s" downloadUrl
+                                | _ -> reraise ()
+
+                        false
+                    with ex ->
+                        printfn "%s" (ex.ToString())
+                        true
 
                 if not downloadFailed then
                     // Downloads successfully scraped
