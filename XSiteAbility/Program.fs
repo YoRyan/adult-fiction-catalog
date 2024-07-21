@@ -50,7 +50,10 @@ let rec getSetsForPage (user: string) (page: int) : seq<XSet> =
             "https://xsiteability.com/"
             + (Seq.head (li.Descendants "img")).Attribute("src").Value() }
 
-    let items = body.CssSelect(".album-view li")
+    let items =
+        body.CssSelect(".album-view li")
+        |> Seq.filter (fun li -> not (li.HasClass("feat")))
+
     let sets = items |> Seq.map readSet
 
     let nextSets =
