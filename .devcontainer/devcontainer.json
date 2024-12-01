@@ -6,7 +6,9 @@
 	"image": "mcr.microsoft.com/devcontainers/dotnet:8.0",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+	"features": {
+		"ghcr.io/devcontainers/features/python:1": {}
+	},
 
 	// Configure tool-specific properties.
 	"customizations": {

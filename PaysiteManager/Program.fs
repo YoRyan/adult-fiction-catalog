@@ -1,4 +1,5 @@
-﻿open FSharp.Data
+﻿open CliWrap
+open FSharp.Data
 open System
 open System.Net
 open System.Text.RegularExpressions
@@ -34,16 +35,16 @@ let rec scrapePage (cc: CookieContainer) (url: string) : seq<Stream> =
                     $"{url}?page=2"
 
             seq {
-                yield! videoUrls |> List.map (fun url -> scrapePage cc url) |> Seq.concat
+                yield! videoUrls |> Seq.map (fun url -> scrapePage cc url) |> Seq.concat
 
                 if videoUrls.Length > 0 then
                     yield! scrapePage cc nextUrl
             }
         | _ -> []
 
-let toYtDlp (dl: Stream) : string =
+let toYtDlp (dl: Stream) : list<string> =
     let ntfsTitle = Regex.Replace(dl.Title, @"[/\\:\*""\?<>\|]", "_")
-    $"yt-dlp --force-ipv4 \"{dl.Url}\" --output \"{ntfsTitle}.%%(ext)s\""
+    [ "--force-ipv4"; dl.Url; "--output"; $"{ntfsTitle}.%%(ext)s" ]
 
 [<EntryPoint>]
 let main argv =
@@ -60,7 +61,24 @@ let main argv =
     let cc = CookieContainer()
     cc.Add(Cookie(cookieName, cookieValue, "/", Uri(url).Host))
 
+    use stdout = Console.OpenStandardOutput()
+    use stderr = Console.OpenStandardError()
+
     for s in scrapePage cc url do
-        printfn "%s" (toYtDlp s)
+        let t =
+            task {
+                let! result =
+                    Cli
+                        .Wrap("yt-dlp")
+                        .WithArguments(toYtDlp s)
+                        .WithStandardOutputPipe(PipeTarget.ToStream(stdout))
+                        .WithStandardErrorPipe(PipeTarget.ToStream(stderr))
+                        .ExecuteAsync()
+
+                if not result.IsSuccess then
+                    failwith "yt-dlp download failed"
+            }
+
+        t.Wait()
 
     0
