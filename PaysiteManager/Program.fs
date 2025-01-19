@@ -44,7 +44,7 @@ let rec scrapePage (cc: CookieContainer) (url: string) : seq<Stream> =
 
 let toYtDlp (dl: Stream) : list<string> =
     let ntfsTitle = Regex.Replace(dl.Title, @"[/\\:\*""\?<>\|]", "_")
-    [ "--force-ipv4"; dl.Url; "--output"; $"{ntfsTitle}.%%(ext)s" ]
+    [ "--fragment-retries"; "1"; dl.Url; "--output"; $"{ntfsTitle}.%%(ext)s" ]
 
 [<EntryPoint>]
 let main argv =
