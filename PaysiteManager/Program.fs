@@ -67,16 +67,18 @@ let main argv =
     for s in scrapePage cc url do
         let t =
             task {
-                let! result =
-                    Cli
-                        .Wrap("yt-dlp")
-                        .WithArguments(toYtDlp s)
-                        .WithStandardOutputPipe(PipeTarget.ToStream(stdout))
-                        .WithStandardErrorPipe(PipeTarget.ToStream(stderr))
-                        .ExecuteAsync()
+                try
+                    let! result =
+                        Cli
+                            .Wrap("yt-dlp")
+                            .WithArguments(toYtDlp s)
+                            .WithStandardOutputPipe(PipeTarget.ToStream(stdout))
+                            .WithStandardErrorPipe(PipeTarget.ToStream(stderr))
+                            .ExecuteAsync()
 
-                if not result.IsSuccess then
-                    failwith "yt-dlp download failed"
+                    ()
+                with _ ->
+                    ()
             }
 
         t.Wait()
