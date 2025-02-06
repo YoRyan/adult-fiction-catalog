@@ -75,12 +75,12 @@ let scrapeSet (username: string) (password: string) (set: XSet) : seq<string> =
         // Retrieve photo album content, if present.
         yield
             $"https://{username}:{password}@xsiteability.com/x/users/{set.User}/content/download.php?set={set.Id}&type=photo"
-            + "\n\tdir={di.Name}\n\tauto-file-renaming=false"
+            + $"\n\tdir={di.Name}\n\tauto-file-renaming=false"
 
         // Retrieve video content, if present.
         yield
             $"https://{username}:{password}@xsiteability.com/x/users/{set.User}/content/download.php?set={set.Id}&type=video"
-            + "\n\tdir={di.Name}\n\tauto-file-renaming=false"
+            + $"\n\tdir={di.Name}\n\tauto-file-renaming=false"
     }
 
 [<EntryPoint>]
