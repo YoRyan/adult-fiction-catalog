@@ -1,4 +1,4 @@
-open FSharp.Data
+﻿open FSharp.Data
 open System
 open System.IO
 open System.Text.RegularExpressions
@@ -113,9 +113,10 @@ let main argv =
     for c in (scrapeList cookies url) do
         writeCollectionMeta c
 
-        for line in (collectionDownloads cookies c) do
-            ariaFile.WriteLine(line)
+        for line in collectionDownloads cookies c do
+            ariaFile.WriteLine line
+            ariaFile.Flush()
 
-        printfn "%s" (c.Meta.Title)
+        printfn "%s (%d)" c.Meta.Title c.Downloads.Length
 
     0
