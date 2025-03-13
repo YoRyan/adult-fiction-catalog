@@ -1,8 +1,11 @@
-﻿open FSharp.Data
+open FSharp.Data
 open System
 open System.IO
 open System.Text.RegularExpressions
 open YamlDotNet.Serialization
+
+let userAgent =
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
 
 type Collection =
     { Meta:
@@ -20,7 +23,9 @@ let toBaseUrl url =
     (new Uri(url)).GetLeftPart(UriPartial.Authority)
 
 let scrapeCollection (cookieHeader: string) (url: string) : Collection =
-    let source = Http.RequestString(url, headers = [ "Cookie", cookieHeader ])
+    let source =
+        Http.RequestString(url, headers = [ "User-Agent", userAgent; "Cookie", cookieHeader ])
+
     let document = HtmlDocument.Parse source
 
     let getInnerText = fun (n: HtmlNode) -> n.InnerText()
@@ -69,7 +74,9 @@ let rec scrapeList (cookieHeader: string) (url: string) : seq<Collection> =
     seq {
         let baseUrl = toBaseUrl url
 
-        let source = Http.RequestString(url, headers = [ "Cookie", cookieHeader ])
+        let source =
+            Http.RequestString(url, headers = [ "User-Agent", userAgent; "Cookie", cookieHeader ])
+
         let document = HtmlDocument.Parse source
 
         yield!
