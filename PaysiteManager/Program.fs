@@ -12,34 +12,38 @@ let rec scrapePage (cc: CookieContainer) (url: string) : seq<Stream> =
     let results = HtmlDocument.Parse(Http.RequestString(url, cookieContainer = cc))
     let body = results.Body()
 
-    match body.CssSelect(".cloudflare-player") with
+    match body.CssSelect ".cloudflare-player" with
     | [ player ] ->
         let title = body.CssSelect("h1").Head.InnerText().Trim()
         let videoUrl = player.Attribute("src").Value()
         [ { Title = title; Url = videoUrl } ]
     | _ ->
-        match body.CssSelect(".allVideos") with
-        | [ videos ] ->
-            let videoUrls =
-                videos.CssSelect("h3 a") |> List.map (fun a -> a.Attribute("href").Value())
+        match body.CssSelect ".pagination" with
+        | [ _ ] ->
+            // If a pagination section is present, the videos list is not just related videos.
+            match body.CssSelect ".allVideos" with
+            | [ videos ] ->
+                let videoUrls =
+                    videos.CssSelect "h3 a" |> List.map (fun a -> a.Attribute("href").Value())
 
-            let pageMatch = Regex.Match(url, @"\?.*page=(\d+)")
+                let pageMatch = Regex.Match(url, @"\?.*page=(\d+)")
 
-            let nextUrl =
-                if pageMatch.Success then
-                    let pageNum = int pageMatch.Groups[1].Value
-                    Regex.Replace(url, @"page=\d+", $"page={pageNum + 1}")
-                elif url.Contains("?") then
-                    $"{url}&page=2"
-                else
-                    $"{url}?page=2"
+                let nextUrl =
+                    if pageMatch.Success then
+                        let pageNum = int pageMatch.Groups[1].Value
+                        Regex.Replace(url, @"page=\d+", $"page={pageNum + 1}")
+                    elif url.Contains("?") then
+                        $"{url}&page=2"
+                    else
+                        $"{url}?page=2"
 
-            seq {
-                yield! videoUrls |> Seq.map (fun url -> scrapePage cc url) |> Seq.concat
+                seq {
+                    yield! videoUrls |> Seq.map (fun url -> scrapePage cc url) |> Seq.concat
 
-                if videoUrls.Length > 0 then
-                    yield! scrapePage cc nextUrl
-            }
+                    if videoUrls.Length > 0 then
+                        yield! scrapePage cc nextUrl
+                }
+            | _ -> []
         | _ -> []
 
 let toYtDlp (dl: Stream) : list<string> =
