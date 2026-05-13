@@ -1,0 +1,8 @@
+storage: none
+source https://api.nuget.org/v3/index.json
+
+nuget CliWrap ~> 3
+nuget FSharp.Data
+nuget Newtonsoft.Json ~> 13
+nuget ReverseMarkdown
+nuget YamlDotNet ~> 17

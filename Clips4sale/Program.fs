@@ -1,9 +1,11 @@
-﻿// Learn more about F# at http://docs.microsoft.com/dotnet/fsharp
+﻿module Afc.Clips4sale.Program
 
-open Clips4Scrape.ScrapeModule
-open Newtonsoft.Json
 open System.IO
 open System.Text.RegularExpressions
+
+open Newtonsoft.Json
+
+open Afc.Clips4sale.Scrape
 
 let saveToJson clips =
     let serialized = clips |> Seq.map JsonConvert.SerializeObject
@@ -40,8 +42,8 @@ let saveToDir clips =
     for clip in clips do
         save clip
 
-[<EntryPoint>]
-let main argv =
-    let url = "https://www.clips4sale.com/studio/..."
+let main (argv: string array) =
+    // let url = "https://www.clips4sale.com/studio/..."
+    let url = argv[0]
     saveToDir (scrape url)
     0

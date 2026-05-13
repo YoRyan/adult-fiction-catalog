@@ -1,12 +1,13 @@
-module Scenes
+module Afc.FMCollection.Scenes
 
-open FSharp.Data
-open ReverseMarkdown
 open System
 open System.Collections.Generic
 open System.IO
 open System.Net
 open System.Text.RegularExpressions
+
+open FSharp.Data
+open ReverseMarkdown
 
 type private Page =
     | Category of links: seq<string>

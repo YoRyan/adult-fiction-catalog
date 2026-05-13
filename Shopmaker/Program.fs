@@ -1,13 +1,16 @@
-﻿open FSharp.Data
+﻿module Afc.Shopmaker
+
 open System
 open System.IO
 open System.Text.RegularExpressions
+
+open FSharp.Data
 open YamlDotNet.Serialization
 
-let userAgent =
+let private userAgent =
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
 
-type Collection =
+type private Collection =
     { Meta:
         {| Title: string
            Models: string list
@@ -16,13 +19,13 @@ type Collection =
            Text: string |}
       Downloads: string list }
 
-let toNtfsFilename s =
+let private toNtfsFilename s =
     Regex.Replace(s, @"[/\\:\*""\?<>\|]", "_")
 
-let toBaseUrl url =
+let private toBaseUrl url =
     (new Uri(url)).GetLeftPart(UriPartial.Authority)
 
-let scrapeCollection (cookieHeader: string) (url: string) : Collection =
+let private scrapeCollection (cookieHeader: string) (url: string) : Collection =
     let source =
         Http.RequestString(url, headers = [ "User-Agent", userAgent; "Cookie", cookieHeader ])
 
@@ -58,19 +61,19 @@ let scrapeCollection (cookieHeader: string) (url: string) : Collection =
         |> List.map (fun a -> a.Value())
         |> List.map (fun s -> toBaseUrl url + s) }
 
-let writeCollectionMeta (c: Collection) =
+let private writeCollectionMeta (c: Collection) =
     let serializer = (new SerializerBuilder()).Build()
     let yaml = serializer.Serialize(c.Meta)
 
     let di = Directory.CreateDirectory(toNtfsFilename c.Meta.Title)
     File.WriteAllText(Path.Combine(di.FullName, "Metadata.yml"), yaml)
 
-let collectionDownloads (cookieHeader: string) (c: Collection) : seq<string> =
+let private collectionDownloads (cookieHeader: string) (c: Collection) : seq<string> =
     c.Downloads
     |> Seq.map (fun url ->
         $"{url}\n\tdir={toNtfsFilename c.Meta.Title}\n\theader=Cookie: {cookieHeader}\n\tauto-file-renaming=false")
 
-let rec scrapeList (cookieHeader: string) (url: string) : seq<Collection> =
+let rec private scrapeList (cookieHeader: string) (url: string) : seq<Collection> =
     seq {
         let baseUrl = toBaseUrl url
 
@@ -101,7 +104,6 @@ let rec scrapeList (cookieHeader: string) (url: string) : seq<Collection> =
             | None -> Seq.empty
     }
 
-[<EntryPoint>]
 let main argv =
     let cookies, url =
         match argv with

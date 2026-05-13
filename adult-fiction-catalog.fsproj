@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>adult_fiction_catalog</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Clips4sale/Scrape.fs" />
+    <Compile Include="Clips4sale/Program.fs" />
+    <Compile Include="FMCollection/HdVideos.fs" />
+    <Compile Include="FMCollection/Scenes.fs" />
+    <Compile Include="FMCollection/Program.fs" />
+    <Compile Include="PaysiteManager/Program.fs" />
+    <Compile Include="Shopmaker/Program.fs" />
+    <Compile Include="XSiteAbility/Program.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <Import Project=".paket\Paket.Restore.targets" />
+</Project>

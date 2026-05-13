@@ -1,12 +1,15 @@
-﻿open CliWrap
-open FSharp.Data
+﻿module Afc.Paysite
+
 open System
 open System.Net
 open System.Text.RegularExpressions
 
-type Stream = { Title: string; Url: string }
+open CliWrap
+open FSharp.Data
 
-let rec scrapePage (cc: CookieContainer) (url: string) : seq<Stream> =
+type private Stream = { Title: string; Url: string }
+
+let rec private scrapePage (cc: CookieContainer) (url: string) : seq<Stream> =
     eprintfn "> %s" url
 
     let results = HtmlDocument.Parse(Http.RequestString(url, cookieContainer = cc))
@@ -46,13 +49,12 @@ let rec scrapePage (cc: CookieContainer) (url: string) : seq<Stream> =
             | _ -> []
         | _ -> []
 
-let toYtDlp (dl: Stream) : list<string> =
+let private toYtDlp (dl: Stream) : list<string> =
     let ntfsTitle = Regex.Replace(dl.Title, @"[/\\:\*""\?<>\|]", "_")
     [ "--fragment-retries"; "1"; dl.Url; "--output"; $"{ntfsTitle}.%%(ext)s" ]
 
-[<EntryPoint>]
 let main argv =
-    let url, cookie =
+    let url, (cookie: string) =
         match argv with
         | [| a0; a1 |] -> a0, a1
         | _ -> failwith "Expected arguments: <url> <http cookie>"

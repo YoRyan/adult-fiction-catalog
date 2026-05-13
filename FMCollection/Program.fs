@@ -1,10 +1,11 @@
-﻿open FSharp.Data
+﻿module Afc.FMCollection.Program
+
+open FSharp.Data
 
 type ScrapeMode =
     | ScrapeHdVideos
     | ScrapeScenes
 
-[<EntryPoint>]
 let main argv =
     let username, password, mode =
         match argv with

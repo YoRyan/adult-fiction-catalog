@@ -1,7 +1,8 @@
-module HdVideos
+module Afc.FMCollection.HdVideos
+
+open System.Text.RegularExpressions
 
 open FSharp.Data
-open System.Text.RegularExpressions
 
 type Video = { Name: string; Url: string }
 

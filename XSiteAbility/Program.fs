@@ -1,21 +1,24 @@
-﻿open FSharp.Data
+﻿module Afc.XSiteAbility
+
 open System.IO
 open System.IO.Compression
 open System.Text.RegularExpressions
+
+open FSharp.Data
 
 // Scraper for vendors on the XSiteAbility platform
 // This was written really quickly and a bunch of stuff is missing:
 // - Free downloads
 // - Any error handling whatsoever
 
-type XSet =
+type private XSet =
     { Id: string
       User: string
       Title: string
       Description: string
       PreviewURL: string }
 
-let rec getSetsForPage (user: string) (page: int) : seq<XSet> =
+let rec private getSetsForPage (user: string) (page: int) : seq<XSet> =
     seq {
         let results =
             HtmlDocument.Load $"https://xsiteability.com/x-new/new-preview-grid.php?page={page}&user={user}"
@@ -45,7 +48,7 @@ let rec getSetsForPage (user: string) (page: int) : seq<XSet> =
             yield! getSetsForPage user (page + 1)
     }
 
-let getSetsForUser user = getSetsForPage user 1
+let private getSetsForUser user = getSetsForPage user 1
 
 let unzipArchive (path: string) : unit =
     let extractOk =
@@ -58,7 +61,7 @@ let unzipArchive (path: string) : unit =
     if extractOk then
         File.Delete(path)
 
-let scrapeSet (username: string) (password: string) (set: XSet) : seq<string> =
+let private scrapeSet (username: string) (password: string) (set: XSet) : seq<string> =
     seq {
         let title =
             match set.Title with
@@ -83,7 +86,6 @@ let scrapeSet (username: string) (password: string) (set: XSet) : seq<string> =
             + $"\n\tdir={di.Name}\n\tauto-file-renaming=false"
     }
 
-[<EntryPoint>]
 let main argv =
     let user, username, password =
         match argv with
